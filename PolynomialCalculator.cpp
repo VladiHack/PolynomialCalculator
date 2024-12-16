@@ -22,6 +22,9 @@ void factorAndFindRoots();
 vector<pair<int,int>> readPolynomial();
 void printPolynomial(vector<pair<int,int>> polynomial);
 pair<int, int> readNumberAsPair();
+int gcdNums(int a, int b);
+int minNumber(int a, int b);
+int lcmNums(int a, int b);
 
 int main()
 {
@@ -115,7 +118,7 @@ void printPolynomial(vector<pair<int, int>> polynomial)
             cout << "+";
         }
 
-        if (numerator != 1)
+        if (numerator != 1 || denominator != 1)
         {
             cout << numerator;
         }
@@ -134,9 +137,73 @@ void printPolynomial(vector<pair<int, int>> polynomial)
    
         degree--;
     }
+
+    cout << endl;
 }
 
+int minNumber(int a, int b)
+{
+    if (a > b)
+    {
+        return b;
+    }
+    return a;
+}
 
+int gcdNums(int a, int b)
+{
+    // Find Minimum of a and b
+    int res = minNumber(a, b);
+
+    // Testing divisiblity with all numbers starting from
+  // min(a, b) to 1
+
+    while (res > 1) {
+
+        // If any number divide both a and b, so we
+        // got the answer
+        if (a % res == 0 && b % res == 0)
+            break;
+        res--;
+    }
+    return res;
+}
+
+int lcmNums(int a, int b)
+{
+    return a * b / gcdNums(a, b);
+}
+
+pair<int, int> ReturnSumOfElements(pair<int, int> elP, pair<int, int> elQ)
+{
+    pair<int, int> elR;
+    int numeratorP, denominatorP, numeratorQ, denominatorQ;
+    
+    numeratorP = elP.first;
+    denominatorP = elP.second;
+    numeratorQ = elQ.first;
+    denominatorQ = elQ.second;
+
+    //each number is presented in this format : {numerator} / { denominator }
+    // in order to find the sum of the elements they need to have matching denominators
+    
+    if (denominatorP != denominatorQ)
+    {
+        // we find the lcm of the denominators and then multiply the numerators with the ( lcm / denominator ) 
+        int lcmDenominators = lcmNums(denominatorP, denominatorQ);
+
+        numeratorP *= lcmDenominators / denominatorP;
+        numeratorQ *= lcmDenominators / denominatorQ;
+        denominatorP = lcmDenominators;
+        denominatorQ = lcmDenominators;
+    }
+
+    //when the denominators are equal, we can find the sum of their numerators
+    elR.first = numeratorP + numeratorQ;
+    elR.second = denominatorP;
+
+    return elR;
+}
 
 void addPolynomials() {
     cout << "Enter polynomial P(x)" << endl;
@@ -149,10 +216,48 @@ void addPolynomials() {
     cout << "Q(X) = ";
     printPolynomial(Q);
 
+    // in order to add the two polynomials, we will sum the elements of equal degrees
 
-   
+    //R will be the result of the sum
+    vector<pair<int, int>> R;
 
+    int sizeP = P.size(); 
+    int sizeQ = Q.size();
+
+    // if either one contains elements from higher degree, then we just pass them to the resulting polynomial R
+
+    int indexP = 0;
+    int indexQ = 0;
+
+    if (sizeP > sizeQ)
+    {
+        int difference = sizeP - sizeQ;
+        while (indexP != difference)
+        {
+            R.push_back(P[indexP++]);
+        }
+    }
+    else if (sizeQ > sizeP)
+    {
+        int difference = sizeQ - sizeP;
+        while (indexQ != difference)
+        {
+            R.push_back(Q[indexQ++]);
+        }
+    }
     
+    pair<int, int> elementR;
+    while (indexP != sizeP && indexQ != sizeQ)
+    {
+        elementR = ReturnSumOfElements(P[indexP], Q[indexQ]);
+        R.push_back(elementR);
+
+        indexP++;
+        indexQ++;
+    }
+    
+    cout << "P(X) + Q(X) = ";
+    printPolynomial(R);
 }
 
 void subtractPolynomials() {
