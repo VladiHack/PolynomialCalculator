@@ -114,26 +114,34 @@ void printPolynomial(vector<pair<int, int>> polynomial)
         denominator = currentNum.second;
       
 
-        if(i!=0 && numerator >0){
-            cout << "+";
-        }
+        
 
-        if (numerator != 1 || denominator != 1)
+        if ( numerator!= 0)
         {
-            cout << numerator;
-        }
-        if(denominator !=  1) {
-            cout << "/" << denominator;
-        }
 
-        if (degree >= 2)
-        {
-            cout << "x^" << degree;
+            if (i != 0 && numerator > 0 && (numerator != 1 || denominator != 1)) {
+                cout << "+";
+            }
+
+            if (numerator != 1 || denominator != 1)
+            {
+                cout << numerator;
+            }
+
+            if (denominator != 1) {
+                cout << "/" << denominator;
+            }
+
+            if (degree >= 2)
+            {
+                cout << "x^" << degree;
+            }
+            else if (degree == 1)
+            {
+                cout << "x";
+            }
         }
-        else if (degree == 1)
-        {
-            cout << "x";
-        }
+    
    
         degree--;
     }
@@ -188,7 +196,20 @@ int gcdNums(int a, int b)
 
 int lcmNums(int a, int b)
 {
+
     return a * b / gcdNums(a, b);
+}
+
+vector<pair<int, int>> addDegree(vector<pair<int, int>> P, int degree)
+{
+    //since we have increased the degree,the new P will be of type old P * x^degree + 0x^0 + ... 0x^1 + ... + 0x^degree-1  
+    pair<int, int> zeroCoefficient = { 0,1 };
+    for (int i = 0;i < degree;i++)
+    {
+        P.push_back(zeroCoefficient);
+    }
+
+    return P;
 }
 
 pair<int, int> ReturnSumOfElements(pair<int, int> elP, pair<int, int> elQ)
@@ -296,6 +317,42 @@ vector<pair<int, int>> returnMultipliedPolynomialByScalar(vector<pair<int, int>>
     return P;
 }
 
+vector<pair<int, int>> returnMultiplicationOfPolynomials(vector<pair<int, int>> P, vector<pair<int, int>> Q)
+{
+    //Multiplication of two polynomials P(x) and Q(x).
+    //Let's assume P(x) is 5x^3 + 3x^2 + 1 and Q(x) is x^2 + 3
+    // Then P(x) * Q(x) = P(x) * x^2 + P(x) * 3 which is sum of polynomials multiplied by scalar and and x of some degree.
+
+    //Resulting polynomial
+    vector<pair<int, int>> R;
+    
+    int sizeQ = Q.size();
+    vector<pair<int, int>> multipliedPolynomial;
+    int degree = sizeQ - 1;
+
+    for (int i = 0;i < sizeQ;i++)
+    {
+        //First we calculate the new coefficients
+        multipliedPolynomial = returnMultipliedPolynomialByScalar(P, Q[i]);
+
+        //Now we adjust the degree
+        multipliedPolynomial = addDegree(multipliedPolynomial, degree);
+
+        if (i == 0)
+        {
+            R = multipliedPolynomial;
+        }
+        else {
+            R = returnSumOfPolynomials(R, multipliedPolynomial);
+        }
+        degree--;
+    }
+
+
+ 
+    return R;
+}
+
 void addPolynomials() {
     cout << "Enter polynomial P(x)" << endl;
     vector<pair<int,int>> P = readPolynomial();
@@ -341,7 +398,24 @@ void subtractPolynomials() {
 }
 
 void multiplyPolynomials() {
-    cout << "multiplyPolynomials() is not implemented yet.\n";
+ 
+   
+    cout << "Enter polynomial P(x)" << endl;
+    vector<pair<int, int>> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter polynomial Q(x)" << endl;
+    vector<pair<int, int>> Q = readPolynomial();
+    cout << "Q(X) = ";
+    printPolynomial(Q);
+
+
+    vector<pair<int, int>> R = returnMultiplicationOfPolynomials(P, Q);
+
+
+    cout << "P(X) * Q(X) = ";
+    printPolynomial(R);
 }
 
 void dividePolynomials() {
