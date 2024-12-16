@@ -161,6 +161,11 @@ int abs(int a)
 
 int gcdNums(int a, int b)
 {
+    if (a == 0 || b == 0)
+    {
+        return 1;
+    }
+
     a = abs(a);
     b = abs(b);
 
@@ -279,6 +284,7 @@ vector<pair<int, int>> returnMultipliedPolynomialByScalar(vector<pair<int, int>>
         gcd = gcdNums(numeratorP, denominatorP);
 
         //Now we abbreviate the fractions
+
         numeratorP /= gcd;
         denominatorP /= gcd;
 
@@ -323,10 +329,13 @@ void subtractPolynomials() {
 
     //We will use the following rule : a + b = a + (-b) and since we already have the function for sum of two polynomials we just need to multiply the second polynomial by -1
     //So we will first write the function for multiplying polynomial by scalar
+    pair<int, int> coefficient = { -1,1 }; // this is exactly the number -1 
+    Q = returnMultipliedPolynomialByScalar(Q, coefficient);
 
     //R will be the result of the subtraction
-    vector<pair<int, int>> R;
-
+    vector<pair<int, int>> R = returnSumOfPolynomials(P, Q);
+    cout << "P(x) - Q(x) = ";
+    printPolynomial(R);
    
    
 }
