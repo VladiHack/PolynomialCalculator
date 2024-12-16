@@ -21,7 +21,7 @@ void representInPowers();
 void factorAndFindRoots();
 vector<pair<int,int>> readPolynomial();
 void printPolynomial(vector<pair<int,int>> polynomial);
-pair<int, int> readNumberAsPair();
+pair<int, int> readRationalNumber();
 int gcdNums(int a, int b);
 int minNumber(int a, int b);
 int lcmNums(int a, int b);
@@ -55,7 +55,7 @@ int main()
    
 }
 
-pair<int, int> readNumberAsPair() {
+pair<int, int> readRationalNumber() {
     int numerator, denominator = 1; // Default denominator is 1
     char slash; // To check for the '/' character
 
@@ -84,7 +84,7 @@ vector<pair<int,int>> readPolynomial()
     for (int i = degree;i >= 0;i--)
     {
         cout << "Enter coefficient before x^" << i << ">> ";
-        currentNum = readNumberAsPair();
+        currentNum = readRationalNumber();
         polynomial.push_back(currentNum);
     }
 
@@ -150,8 +150,20 @@ int minNumber(int a, int b)
     return a;
 }
 
+int abs(int a)
+{
+    if (a > 0)
+    {
+        return a;
+    }
+    return -a;
+}
+
 int gcdNums(int a, int b)
 {
+    a = abs(a);
+    b = abs(b);
+
     // Find Minimum of a and b
     int res = minNumber(a, b);
 
@@ -205,23 +217,12 @@ pair<int, int> ReturnSumOfElements(pair<int, int> elP, pair<int, int> elQ)
     return elR;
 }
 
-void addPolynomials() {
-    cout << "Enter polynomial P(x)" << endl;
-    vector<pair<int,int>> P = readPolynomial();
-    cout << "P(X) = ";
-    printPolynomial(P);
-
-    cout << "Enter polynomial Q(x)" << endl;
-    vector<pair<int,int>> Q = readPolynomial();
-    cout << "Q(X) = ";
-    printPolynomial(Q);
-
-    // in order to add the two polynomials, we will sum the elements of equal degrees
-
-    //R will be the result of the sum
+vector<pair<int, int>> returnSumOfPolynomials(vector<pair<int, int>> P, vector<pair<int, int>> Q)
+{
+    //resulting vector
     vector<pair<int, int>> R;
 
-    int sizeP = P.size(); 
+    int sizeP = P.size();
     int sizeQ = Q.size();
 
     // if either one contains elements from higher degree, then we just pass them to the resulting polynomial R
@@ -245,7 +246,7 @@ void addPolynomials() {
             R.push_back(Q[indexQ++]);
         }
     }
-    
+
     pair<int, int> elementR;
     while (indexP != sizeP && indexQ != sizeQ)
     {
@@ -255,13 +256,79 @@ void addPolynomials() {
         indexP++;
         indexQ++;
     }
+
+    return R;
+}
+
+vector<pair<int, int>> returnMultipliedPolynomialByScalar(vector<pair<int, int>> P, pair<int, int> scalar)
+{
+    int size = P.size();
+    int gcd = 0; 
+    int numeratorScalar = scalar.first;
+    int denominatorScalar = scalar.second;
+    int numeratorP = 0;
+    int denominatorP = 0;
+    for (int i = 0;i < size;i++)
+    {
+        numeratorP = P[i].first; 
+        denominatorP = P[i].second;
+        //we multiply each numerator of P by the numerator of the Scalar and multiply each denominator of P by the denominator of the scalar
+        numeratorP *= numeratorScalar;
+        denominatorP *= denominatorScalar;
+        // we find the gcd of the new numeratorP and new denominatorP 
+        gcd = gcdNums(numeratorP, denominatorP);
+
+        //Now we abbreviate the fractions
+        numeratorP /= gcd;
+        denominatorP /= gcd;
+
+        //Finally, we save the values to the Polynomial
+        P[i].first = numeratorP;
+        P[i].second = denominatorP;
+    }
+
+    return P;
+}
+
+void addPolynomials() {
+    cout << "Enter polynomial P(x)" << endl;
+    vector<pair<int,int>> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter polynomial Q(x)" << endl;
+    vector<pair<int,int>> Q = readPolynomial();
+    cout << "Q(X) = ";
+    printPolynomial(Q);
+
+
+    vector<pair<int, int>> R = returnSumOfPolynomials(P, Q);
+
     
     cout << "P(X) + Q(X) = ";
     printPolynomial(R);
 }
 
 void subtractPolynomials() {
-    cout << "subtractPolynomials() is not implemented yet.\n";
+    cout << "Enter polynomial P(x)" << endl;
+    vector<pair<int, int>> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter polynomial Q(x)" << endl;
+    vector<pair<int, int>> Q = readPolynomial();
+    cout << "Q(X) = ";
+    printPolynomial(Q);
+
+
+    //We will use the following rule : a + b = a + (-b) and since we already have the function for sum of two polynomials we just need to multiply the second polynomial by -1
+    //So we will first write the function for multiplying polynomial by scalar
+
+    //R will be the result of the subtraction
+    vector<pair<int, int>> R;
+
+   
+   
 }
 
 void multiplyPolynomials() {
@@ -273,7 +340,19 @@ void dividePolynomials() {
 }
 
 void multiplyPolynomialByScalar() {
-    cout << "multiplyPolynomialByScalar() is not implemented yet.\n";
+
+    cout << "Enter polynomial P(x)" << endl;
+    vector<pair<int, int>> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter rational number>> ";
+    pair<int, int> scalar = readRationalNumber();
+
+    P = returnMultipliedPolynomialByScalar(P, scalar);
+    cout << "Result: ";
+    printPolynomial(P);
+
 }
 
 void findValueAtNumber() {

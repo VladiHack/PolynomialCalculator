@@ -1,5 +1,6 @@
 ﻿  PolynomialCalculator.cpp
 C:\Users\Vladimir Boychev\Desktop\UP PRAKTIKUM\PolynomialCalculator\PolynomialCalculator.cpp(97,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-C:\Users\Vladimir Boychev\Desktop\UP PRAKTIKUM\PolynomialCalculator\PolynomialCalculator.cpp(224,15): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
 C:\Users\Vladimir Boychev\Desktop\UP PRAKTIKUM\PolynomialCalculator\PolynomialCalculator.cpp(225,15): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Vladimir Boychev\Desktop\UP PRAKTIKUM\PolynomialCalculator\PolynomialCalculator.cpp(226,15): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Vladimir Boychev\Desktop\UP PRAKTIKUM\PolynomialCalculator\PolynomialCalculator.cpp(265,14): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   PolynomialCalculator.vcxproj -> C:\Users\Vladimir Boychev\Desktop\UP PRAKTIKUM\PolynomialCalculator\x64\Debug\PolynomialCalculator.exe
