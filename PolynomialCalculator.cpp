@@ -261,6 +261,40 @@ int lcmNums(int a, int b)
     return a * b / gcdNums(a, b);
 }
 
+bool isZeroPolynomial(vector<RationalNumber> P)
+{
+    int size = P.size();
+    int numerator;
+    for (int i = 0;i < size;i++)
+    {
+        numerator = P[i].first;
+
+        if (numerator != 0)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+bool isConstantPolynomial(vector<RationalNumber> P)
+{
+    int endIndex = P.size()-1;
+    int numerator;
+
+    //We loop till we reach the second to last element
+    for (int i = 0;i < endIndex;i++)
+    {
+        numerator = P[i].first;
+
+        if (numerator != 0)
+        {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 vector<RationalNumber> addDegree(vector<RationalNumber> P, int degree)
 {
     //since we have increased the degree,the new P will be of type old P * x^degree + 0x^0 + ... 0x^1 + ... + 0x^degree-1  
@@ -271,6 +305,44 @@ vector<RationalNumber> addDegree(vector<RationalNumber> P, int degree)
     }
 
     return P;
+}
+
+vector<RationalNumber> resizePolynomial(vector<RationalNumber> P)
+{
+    vector<RationalNumber> result;
+     
+    
+    int size = P.size();
+    int numerator;
+    bool hasPredecessor = false;
+
+    for (int i = 0;i < size;i++)
+    {
+        numerator = P[i].first;
+
+        if (numerator != 0 || hasPredecessor)
+        {
+            hasPredecessor = true;
+            result.push_back(P[i]);
+        }
+    }
+
+
+
+    return result;
+}
+
+vector<RationalNumber> copyVector(vector<RationalNumber> P)
+{
+    vector<RationalNumber> result;
+    
+    int size = P.size();
+    for (int i = 0;i < size;i++)
+    {
+        result.push_back(P[i]);
+    }
+
+    return result;
 }
 
 RationalNumber ReturnSumOfRationalNums(RationalNumber elP, RationalNumber elQ)
@@ -506,9 +578,62 @@ vector<RationalNumber> returnDivisionOfPolynomials(vector<RationalNumber> & P, v
     }
 
     //At the end, our P(x) will have become the remainder
-
+    //We resize P
+    P = resizePolynomial(P);
 
     return Quotient;
+
+}
+
+vector<RationalNumber> returnRemainderOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q)
+{
+    // the division of two polynomials can be solved using subtraction of two polynomials and multiplication of polynomial by a number
+    // example : P(x) = 5x^5 - 4x^4 + 3x^3 + x^2 + x + 1
+    // Q(x) = x^3 - 5
+    //we need to find a coefficient, which will remove the element of highest degree in P(x). We do this until the highest degree in P(x) < highest degree in Q(x)
+
+    vector<RationalNumber> Quotient;
+
+
+    int degreeDifference = P.size() - Q.size();
+
+    int indexP = 0;
+    int indexQ = 0;
+
+
+    RationalNumber coefficient;
+    RationalNumber zero = { 0,1 };
+    vector<RationalNumber> tempPolynomial;
+
+
+
+    while (degreeDifference >= 0)
+    {
+        if (P[indexP].first == 0)
+        {
+            indexP++;
+            degreeDifference--;
+            Quotient.push_back(zero);
+            continue;
+        }
+        //We find the coefficient that Q needs to by multiplied by in order to remove the highest degree of P(x) 
+        coefficient = ReturnDivisionOfRationalNums(P[indexP], Q[indexQ]);
+        //Now we multiply Q by coefficient and subtract it from P
+        tempPolynomial = returnMultipliedPolynomialByScalar(Q, coefficient);
+        //Now we increase the degree of the polynomial
+        tempPolynomial = addDegree(tempPolynomial, degreeDifference);
+        //now we subtract P and the tempPolynomial
+        P = returnSubtractionOfPolynomials(P, tempPolynomial);
+        //We add the coefficient to the Quotient polynomial
+        Quotient.push_back(coefficient);
+        degreeDifference--; indexP++;
+    }
+
+    //At the end, our P(x) will have become the remainder
+    //We resize it and return the remainder
+
+    P = resizePolynomial(P);
+    return P;
 
 }
 
@@ -535,6 +660,34 @@ RationalNumber returnValueAtNumber(vector<RationalNumber> P, RationalNumber num)
     }
 
     return result;
+}
+
+vector<RationalNumber> returnGcdOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q)
+{
+    //The algorithm consists of four steps
+    //Step 1 : Divide P(x) by Q(x)
+    //Step 2 : Check if the remainder is Q(x)
+    //Step 3 : If the remainder is non-zero, replace P(x) with Q(x) and Q(x) with the remainder
+    //Step 4 : Repeat until the remainder becomes zero
+
+
+    vector<RationalNumber> remainderPolynomial;
+
+    while (true)
+    {
+        remainderPolynomial = returnRemainderOfPolynomials(P, Q);
+        
+        if (isZeroPolynomial(remainderPolynomial))
+        {
+            break;
+        }
+
+        P = Q;
+        Q = remainderPolynomial;
+
+    }
+
+    return Q;
 }
 
 void addPolynomials() {
@@ -650,7 +803,22 @@ void findValueAtNumber() {
 }
 
 void findGCDOfTwoPolynomials() {
-    cout << "findGCDOfTwoPolynomials() is not implemented yet.\n";
+    cout << "Enter polynomial P(x)" << endl;
+    vector<RationalNumber> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter polynomial Q(x)" << endl;
+    vector<RationalNumber> Q = readPolynomial();
+    cout << "Q(X) = ";
+    printPolynomial(Q);
+
+
+    vector<RationalNumber> R = returnGcdOfPolynomials(P, Q);
+
+
+    cout << "gcd(P(x), Q(x)) = ";
+    printPolynomial(R);
 }
 
 void displayVieta() {
