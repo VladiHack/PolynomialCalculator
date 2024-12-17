@@ -27,6 +27,23 @@ RationalNumber readRationalNumber();
 int gcdNums(int a, int b);
 int minNumber(int a, int b);
 int lcmNums(int a, int b);
+void printRational(RationalNumber num)
+{
+    int numerator = num.first;
+    int denominator = num.second;
+    if (numerator == 0)
+    {
+        cout << "0";
+        return;
+    }
+    if (denominator == 1)
+    {
+        cout << numerator;
+        return;
+    }
+
+    cout << numerator << "/" << denominator;
+}
 vector<RationalNumber> returnMultipliedPolynomialByScalar(vector<RationalNumber> P, RationalNumber scalar);
 
 int main()
@@ -256,9 +273,9 @@ vector<RationalNumber> addDegree(vector<RationalNumber> P, int degree)
     return P;
 }
 
-RationalNumber ReturnSumOfElements(RationalNumber elP, RationalNumber elQ)
+RationalNumber ReturnSumOfRationalNums(RationalNumber elP, RationalNumber elQ)
 {
-    RationalNumber elR;
+    RationalNumber numRes;
     int numeratorP, denominatorP, numeratorQ, denominatorQ;
     
     numeratorP = elP.first;
@@ -281,10 +298,35 @@ RationalNumber ReturnSumOfElements(RationalNumber elP, RationalNumber elQ)
     }
 
     //when the denominators are equal, we can find the sum of their numerators
-    elR.first = numeratorP + numeratorQ;
-    elR.second = denominatorP;
+    numRes.first = numeratorP + numeratorQ;
+    numRes.second = denominatorP;
 
-    return elR;
+    return numRes;
+}
+
+RationalNumber ReturnMultiplicationRationalNums(RationalNumber elP, RationalNumber elQ)
+{
+    RationalNumber res;
+
+    int numeratorP = elP.first;
+    int denominatorP = elP.second;
+    int numeratorQ = elQ.first;
+    int denominatorQ = elQ.second;
+
+     numeratorP *= numeratorQ;
+     denominatorP *= denominatorQ;
+
+    // we find the gcd of the new numeratorP and new denominatorP 
+    int gcd = gcdNums(numeratorP, denominatorP);
+
+    //Now we abbreviate the fractions
+
+    numeratorP /= gcd;
+    denominatorP /= gcd;
+
+    res = { numeratorP,denominatorP };
+
+    return res;
 }
 
 RationalNumber ReturnDivisionOfRationalNums(RationalNumber elP, RationalNumber elQ)
@@ -347,7 +389,7 @@ vector<RationalNumber> returnSumOfPolynomials(vector<RationalNumber> P, vector<R
     RationalNumber elementR;
     while (indexP != sizeP && indexQ != sizeQ)
     {
-        elementR = ReturnSumOfElements(P[indexP], Q[indexQ]);
+        elementR = ReturnSumOfRationalNums(P[indexP], Q[indexQ]);
         R.push_back(elementR);
 
         indexP++;
@@ -374,28 +416,10 @@ vector<RationalNumber> returnMultipliedPolynomialByScalar(vector<RationalNumber>
 {
     int size = P.size();
     int gcd = 0; 
-    int numeratorScalar = scalar.first;
-    int denominatorScalar = scalar.second;
-    int numeratorP = 0;
-    int denominatorP = 0;
+
     for (int i = 0;i < size;i++)
     {
-        numeratorP = P[i].first; 
-        denominatorP = P[i].second;
-        //we multiply each numerator of P by the numerator of the Scalar and multiply each denominator of P by the denominator of the scalar
-        numeratorP *= numeratorScalar;
-        denominatorP *= denominatorScalar;
-        // we find the gcd of the new numeratorP and new denominatorP 
-        gcd = gcdNums(numeratorP, denominatorP);
-
-        //Now we abbreviate the fractions
-
-        numeratorP /= gcd;
-        denominatorP /= gcd;
-
-        //Finally, we save the values to the Polynomial
-        P[i].first = numeratorP;
-        P[i].second = denominatorP;
+        P[i] = ReturnMultiplicationRationalNums(P[i], scalar);
     }
 
     return P;
@@ -488,6 +512,31 @@ vector<RationalNumber> returnDivisionOfPolynomials(vector<RationalNumber> & P, v
 
 }
 
+RationalNumber returnValueAtNumber(vector<RationalNumber> P, RationalNumber num)
+{
+    RationalNumber result = { 0,1 }; // result is 0 at the start
+
+    //we will start iterating from the last element
+    int index = P.size() - 1;
+
+    RationalNumber x = { 1,1 }; // at the beginning our x is of degree 0, so its equal to 1 ( {1,1}, as a rational) 
+    RationalNumber currentElement; 
+    for (int i = index;i >= 0;i--)
+    {
+        //Each time we enter the for cycle, we will sum the result with the value for x * coefficient before x
+        //Example P(x) = 2x^2 + 1/2x.   P(2) = 1/2 * 2 ^ 1 + 2 * 2 ^ 2
+        currentElement = ReturnMultiplicationRationalNums(P[i], x);
+        
+        //We add the current element to the overall result
+        result = ReturnSumOfRationalNums(result, currentElement);
+
+        //We multiply x by num, as the next degree will be the current degree + 1
+        x = ReturnMultiplicationRationalNums(x, num);
+    }
+
+    return result;
+}
+
 void addPolynomials() {
     cout << "Enter polynomial P(x)" << endl;
     vector<RationalNumber> P = readPolynomial();
@@ -548,23 +597,23 @@ void multiplyPolynomials() {
 }
 
 void dividePolynomials() {
-    cout << "Enter polynomial P(x)" << endl;
-    vector<RationalNumber> P = readPolynomial();
-    cout << "P(X) = ";
-    printPolynomial(P);
+    cout << "Enter polynomial A(x)" << endl;
+    vector<RationalNumber> A = readPolynomial();
+    cout << "A(X) = ";
+    printPolynomial(A);
 
-    cout << "Enter polynomial Q(x)" << endl;
-    vector<RationalNumber> Q = readPolynomial();
-    cout << "Q(X) = ";
-    printPolynomial(Q);
+    cout << "Enter polynomial B(x)" << endl;
+    vector<RationalNumber> B = readPolynomial();
+    cout << "B(X) = ";
+    printPolynomial(B);
 
 
     //R will be the result of the division
-    vector<RationalNumber> Quotient = returnDivisionOfPolynomials(P, Q);
+    vector<RationalNumber> Quotient = returnDivisionOfPolynomials(A, B);
     cout << "Quotient Q(x)=";
     printPolynomial(Quotient);
     cout << "Remainder R(x)=";
-    printPolynomial(P);
+    printPolynomial(A);
 }
 
 void multiplyPolynomialByScalar() {
@@ -584,7 +633,20 @@ void multiplyPolynomialByScalar() {
 }
 
 void findValueAtNumber() {
-    cout << "findValueAtNumber() is not implemented yet.\n";
+    cout << "Enter polynomial P(x)" << endl;
+    vector<RationalNumber> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter rational number>> ";
+    RationalNumber num = readRationalNumber();
+
+    RationalNumber result = returnValueAtNumber(P, num);
+    cout << "P("; 
+    printRational(num);
+    cout << ") = ";
+    printRational(result);
+    cout << endl;
 }
 
 void findGCDOfTwoPolynomials() {
