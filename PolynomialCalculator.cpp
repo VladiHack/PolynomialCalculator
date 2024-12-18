@@ -963,6 +963,98 @@ void printRationalRoots(vector<RationalNumber> roots)
     }
 
 }
+void printCombination(vector<vector<int>> combinations)
+{
+    vector<int> currentCombination;
+
+    int sizeCombinations = combinations.size();
+    int sizeCombination = 0;
+    for (int i = 0;i<sizeCombinations;i++)
+    {
+        currentCombination = combinations[i];
+        sizeCombination = currentCombination.size();
+        
+        if (i > 0)
+        {
+            cout << " + ";
+        }
+
+        for (int l = 0;l < sizeCombination;l++)
+        {
+            cout << "x" << currentCombination[l];
+        }
+    }
+}
+void printVietaForPolynomial(vector<RationalNumber> P)
+{
+     int size = P.size();
+
+     //we keep all the combinations
+     vector<int> rootCombination;
+     vector<vector<int>> keepPrevCombinations;
+     vector<vector<int>> keepNewCombinations;
+
+     RationalNumber numerator;
+     RationalNumber denominator = P[0];
+     RationalNumber result;
+
+     int sizeCombinations = 0;int biggestElement; int sizeCurrentCombination = 0;
+
+    for (int i = 1;i < size;i++)
+    {
+        //i is equal to the combinations of x's. example i = 1 : x1 + x2 + .... + xn    i = 2 : x1x2 + x1x3 + .... 
+
+        if (i == 1)
+        {
+            for (int j = 1;j < size;j++)
+            {
+                rootCombination.push_back(j);
+                keepPrevCombinations.push_back(rootCombination);
+                sizeCombinations++;
+                rootCombination.pop_back();
+            }
+        }
+        else 
+        {
+            sizeCombinations = keepPrevCombinations.size();
+
+            for (int j = 0;j < sizeCombinations;j++)
+            {
+                rootCombination = keepPrevCombinations[j];
+                sizeCurrentCombination = rootCombination.size();
+
+                    //we find the last element in the current combination and we add all all the elements which are bigger than the last one
+                    biggestElement = rootCombination[sizeCurrentCombination - 1];
+
+                    //we add each possible element
+                    for (int s = biggestElement + 1;s < size;s++)
+                    {
+                        rootCombination.push_back(s);
+                        keepNewCombinations.push_back(rootCombination);
+                        rootCombination.pop_back();
+                    }
+            }
+            keepPrevCombinations = keepNewCombinations;
+            keepNewCombinations.clear();
+        }
+
+        
+        printCombination(keepPrevCombinations);
+        
+        // in the formula we have (-1)^n a0 / an
+        numerator = P[i];
+        if (i % 2 == 1)
+        { 
+            numerator = ReturnMultiplicationRationalNums(numerator, { -1,1 });
+        }
+        result = ReturnDivisionOfRationalNums(numerator, denominator);
+        cout << " = ";
+        printRational(result);
+        cout << endl;
+    }
+
+
+}
 
 void addPolynomials() {
     cout << "Enter polynomial P(x)" << endl;
@@ -1096,7 +1188,12 @@ void findGCDOfTwoPolynomials() {
 }
 
 void displayVieta() {
-    cout << "displayVieta() is not implemented yet.\n";
+    cout << "Enter polynomial P(x)" << endl;
+    vector<RationalNumber> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    printVietaForPolynomial(P);
 }
 
 void representInPowers() {
