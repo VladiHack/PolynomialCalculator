@@ -28,7 +28,10 @@ int gcdNums(int a, int b);
 int minNumber(int a, int b);
 int lcmNums(int a, int b);
 bool  isZeroPolynomial(vector<RationalNumber> P);
+vector<RationalNumber> returnMultiplicationOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q);
 void printRational(RationalNumber num)
+
+
 {
     int numerator = num.first;
     int denominator = num.second;
@@ -543,6 +546,30 @@ RationalNumber ReturnDivisionOfRationalNums(RationalNumber elP, RationalNumber e
     return result;
 }
 
+vector<RationalNumber> returnValueAtPolynomial(vector<RationalNumber> P, vector<RationalNumber> Q)
+{
+    vector<RationalNumber> result;
+    int sizeP = P.size();
+    int sizeTemp = 0;
+    
+
+    for (int i = 0;i < sizeP;i++)
+    {
+        if (i == 0)
+        {
+            result.push_back(P[i]);
+        }
+        else {
+            result = returnMultiplicationOfPolynomials(result, Q);
+            sizeTemp = result.size();
+            result[sizeTemp - 1] = ReturnSumOfRationalNums(result[sizeTemp - 1], P[i]);
+        }
+       
+    }
+
+    return result;
+}
+
 vector<RationalNumber> returnSumOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q)
 {
     //resulting vector
@@ -877,6 +904,92 @@ vector<RationalNumber> returnRationalRoots(vector<RationalNumber> P)
    return result;
 }
 
+void printRational(int numerator, int denominator)
+{
+    if (numerator != 1 || denominator != 1)
+    {
+        if (numerator > 0)
+        {
+            cout << "+";
+        }
+
+        cout << numerator;
+        if (denominator != 1)
+        {
+            cout << "/" << denominator;
+        }
+
+    }
+}
+
+void printRepresentationInPowers(vector<RationalNumber> P, RationalNumber num) 
+{
+    // if we want to present the polynomial as P(x+a), then let's say x+a = y,  x = y - a. Then, P(x) = P( y - a) 
+    vector<RationalNumber> polynomialToCheck;
+    //we add x
+    polynomialToCheck.push_back({ 1,1 });
+    // we add - num
+    polynomialToCheck.push_back(ReturnMultiplicationRationalNums(num, { -1,1 }));
+
+    //then we find P (polynomialToCheck)
+    vector<RationalNumber> result = returnValueAtPolynomial(P, polynomialToCheck);
+
+    //now we don't print the polynomial the original way, but instead of x we type (x+a)
+    int resultSize = result.size(); 
+    int degree = resultSize - 1;
+    int numeratorNum = num.first;
+    int denominatorNum = num.second;
+    int numerator, denominator;
+
+    cout << "P(x";
+    printRational(numeratorNum, denominatorNum);
+    cout << ") = ";
+
+    for (int i = 0;i < resultSize;i++)
+    {
+      
+        numerator = result[i].first;
+        denominator = result[i].second;
+
+        if (numerator == 0)
+        {
+            degree--;
+            continue;
+        }
+        
+        if (i == 0 && numerator > 0)
+        {
+            //no + before the first element
+            if (numerator != 1 || denominator != 1)
+            {
+                cout << numerator;
+                if (denominator != 1)
+                {
+                    cout << "/" << denominator;
+                }
+            }
+        }
+        else {
+            printRational(numerator, denominator);
+        }
+
+        if (degree > 0)
+        {
+            cout << "(x";
+            printRational(numeratorNum, denominatorNum);
+            cout << ")";
+
+            if (degree > 1)
+            {
+                cout << "^" << degree;
+            }
+        }
+        degree--;
+    }
+
+}
+
+
 void printFactoring(vector<RationalNumber> roots)
 {
     int size = roots.size();
@@ -1197,7 +1310,17 @@ void displayVieta() {
 }
 
 void representInPowers() {
-    cout << "representInPowers() is not implemented yet.\n";
+    cout << "Enter polynomial P(x)" << endl;
+    vector<RationalNumber> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    cout << "Enter rational number>> ";
+    RationalNumber num = readRationalNumber();
+
+
+    printRepresentationInPowers(P, num);
+
 }
 
 void factorAndFindRoots() {
