@@ -27,6 +27,7 @@ RationalNumber readRationalNumber();
 int gcdNums(int a, int b);
 int minNumber(int a, int b);
 int lcmNums(int a, int b);
+bool  isZeroPolynomial(vector<RationalNumber> P);
 void printRational(RationalNumber num)
 {
     int numerator = num.first;
@@ -121,7 +122,11 @@ void printPolynomial(vector<RationalNumber> polynomial)
         cout << "Polynomial is empty" << endl;
         return;
     }
-
+    if (isZeroPolynomial(polynomial))
+    {
+        cout << "0" << endl;
+        return;
+    }
     // Start with the highest degree term
     int degree = size - 1;
     bool firstTerm = true;  // To avoid printing "+" at the beginning
@@ -206,6 +211,8 @@ void printPolynomial(vector<RationalNumber> polynomial)
         // Decrease degree for the next term
         degree--;
     }
+
+   
 
     cout << endl;
 }
@@ -294,6 +301,42 @@ bool isConstantPolynomial(vector<RationalNumber> P)
     
     return true;
 }
+bool isPrime(int number)
+{
+    int sq = sqrt(number);
+
+    bool isPrime = true;
+
+    for (int i = 2;i <= sq;i++)
+    {
+        if (number % i == 0)
+        {
+            isPrime = false;
+            break;
+        }
+    }
+
+    return isPrime;
+}
+
+bool areEqualRationalNums(RationalNumber num1, RationalNumber num2)
+{
+    return num1.first == num2.first && num2.second == num1.second;
+}
+
+bool containsRationalNumber(vector<RationalNumber> vec, RationalNumber num)
+{
+    int size = vec.size();
+
+    for (int i = 0;i < size;i++)
+    {
+        if (vec[i] == num)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 vector<RationalNumber> addDegree(vector<RationalNumber> P, int degree)
 {
@@ -343,6 +386,78 @@ vector<RationalNumber> copyVector(vector<RationalNumber> P)
     }
 
     return result;
+}
+
+vector<RationalNumber> returnPossibleRoots(vector<int> primeDivisorsA, vector<int> primeDivisorsN)
+{
+    vector<RationalNumber> possibleRoots;
+    int sizeRoots = 0;
+
+    int sizeA = primeDivisorsA.size(); 
+    int sizeN = primeDivisorsN.size();
+
+    int numerator, denominator, gcd;
+    RationalNumber currentRoot;
+
+    for (int i = 0; i < sizeN;i++)
+    {
+        //The elements from N will be our numerators and the elements from A will be our denominators
+        numerator = primeDivisorsN[i];
+
+        for (int j = 0;j < sizeA;j++)
+        {
+            denominator = primeDivisorsA[j];
+            
+
+            //we find the gcd of the numerator and denominator in order to not have repeating fractions. Example : 2/2 and 1
+
+            gcd = gcdNums(numerator, denominator);
+            numerator /= gcd;
+            denominator /= gcd;
+
+            currentRoot = { numerator,denominator };
+
+           // we will only add rational numbers that aren't already part of the possibleRoots 
+            if (sizeRoots == 0 || containsRationalNumber(possibleRoots, currentRoot) == false )
+            {
+                // we need to check for both positive and negative roots 
+                possibleRoots.push_back(currentRoot);
+
+                currentRoot.first *= -1;
+                possibleRoots.push_back(currentRoot);
+
+                sizeRoots+=2;
+            }
+        }
+    }
+
+
+
+    return possibleRoots;
+}
+
+vector<int> returnPrimeDivisors(int number)
+{
+    vector<int> divisors;
+    
+    number = abs(number);
+
+    if (isPrime(number))
+    {
+        divisors.push_back(number);
+    }
+    else {
+        int endIndex = number / 2;
+
+        for (int i = 2;i <= endIndex; i++)
+        {
+            if ( (number % i == 0) && isPrime(i))
+            {
+                divisors.push_back(i);
+            }
+        }
+    }
+    return divisors;
 }
 
 RationalNumber ReturnSumOfRationalNums(RationalNumber elP, RationalNumber elQ)
@@ -533,13 +648,15 @@ vector<RationalNumber> returnMultiplicationOfPolynomials(vector<RationalNumber> 
     return R;
 }
 
-vector<RationalNumber> returnDivisionOfPolynomials(vector<RationalNumber> & P, vector<RationalNumber> Q)
+pair<vector<RationalNumber>,vector<RationalNumber>> returnQuotientAndRemainderOfPolynomials(vector<RationalNumber>  P, vector<RationalNumber> Q)
 {
     // the division of two polynomials can be solved using subtraction of two polynomials and multiplication of polynomial by a number
     // example : P(x) = 5x^5 - 4x^4 + 3x^3 + x^2 + x + 1
     // Q(x) = x^3 - 5
     //we need to find a coefficient, which will remove the element of highest degree in P(x). We do this until the highest degree in P(x) < highest degree in Q(x)
     
+    pair<vector<RationalNumber>, vector<RationalNumber>> result;
+
     vector<RationalNumber> Quotient;
 
 
@@ -577,11 +694,14 @@ vector<RationalNumber> returnDivisionOfPolynomials(vector<RationalNumber> & P, v
         degreeDifference--; indexP++;
     }
 
-    //At the end, our P(x) will have become the remainder
     //We resize P
     P = resizePolynomial(P);
 
-    return Quotient;
+    result.first = Quotient;
+    //At the end, our P(x) will have become the remainder
+    result.second = P;
+
+    return result;
 
 }
 
@@ -642,21 +762,15 @@ RationalNumber returnValueAtNumber(vector<RationalNumber> P, RationalNumber num)
     RationalNumber result = { 0,1 }; // result is 0 at the start
 
     //we will start iterating from the last element
-    int index = P.size() - 1;
+    int size = P.size();
 
-    RationalNumber x = { 1,1 }; // at the beginning our x is of degree 0, so its equal to 1 ( {1,1}, as a rational) 
-    RationalNumber currentElement; 
-    for (int i = index;i >= 0;i--)
+    for (int i = 0;i < size;i++)
     {
-        //Each time we enter the for cycle, we will sum the result with the value for x * coefficient before x
-        //Example P(x) = 2x^2 + 1/2x.   P(2) = 1/2 * 2 ^ 1 + 2 * 2 ^ 2
-        currentElement = ReturnMultiplicationRationalNums(P[i], x);
-        
-        //We add the current element to the overall result
-        result = ReturnSumOfRationalNums(result, currentElement);
+        // we multiply the result by num on each step
+        result = ReturnMultiplicationRationalNums(result, num);
 
-        //We multiply x by num, as the next degree will be the current degree + 1
-        x = ReturnMultiplicationRationalNums(x, num);
+        //then we add the current element to the result
+        result = ReturnSumOfRationalNums(result, P[i]);
     }
 
     return result;
@@ -688,6 +802,166 @@ vector<RationalNumber> returnGcdOfPolynomials(vector<RationalNumber> P, vector<R
     }
 
     return Q;
+}
+
+vector<RationalNumber> returnRationalRoots(vector<RationalNumber> P) 
+{
+    vector<RationalNumber> result;
+    
+    int indexA = 0;
+    int indexN = P.size() - 1;
+
+    // we will call the last element n
+    // we will call the first element a
+
+    int numeratorA = P[indexA].first;
+    int denominatorA = P[indexA].second;
+    int numeratorN = P[indexN].first;
+    int denominatorN = P[indexN].second;
+
+    RationalNumber coefficient = { lcmNums(denominatorA, denominatorN),1 };
+
+    //Then we multiply the whole Polynomial by the lcm
+    P = returnMultipliedPolynomialByScalar(P, coefficient);
+    
+    //we find all the prime divisors of the first element
+    vector<int> primeDivisorsA = returnPrimeDivisors(P[indexA].first);
+    //we find all the prime divisors of the last element
+    vector<int> primeDivisorsN = returnPrimeDivisors(P[indexN].first);
+
+    //since 1 isn't prime, we add it to both vectors, as it can be a root
+    //by adding 1 as first element, the resulting vectors will be sorted
+
+    primeDivisorsA.insert(primeDivisorsA.begin(), 1);
+    primeDivisorsN.insert(primeDivisorsN.begin(),1);
+    
+
+    vector<RationalNumber> possibleRoots = returnPossibleRoots(primeDivisorsA, primeDivisorsN);
+
+    //now we test each possible root using the division of two polynomials. If the remainder is 0, then the root is a factoring root
+    int maxSize = possibleRoots.size();
+    //We add Quotient and remainder for each 
+    vector<RationalNumber> Q;
+    vector<RationalNumber> R;
+    pair<vector<RationalNumber>, vector<RationalNumber>> tempQandR;
+    //the divisor we are checking is polynomial of type x - possibleRoot
+    vector<RationalNumber> divisor; 
+    //we add x to the divisor
+    divisor.push_back({1,1});
+
+    for (int i = 0;i < maxSize;)
+    {
+        //we need to add the root multiplied by -1
+        divisor.push_back(ReturnMultiplicationRationalNums(possibleRoots[i],{-1,1}));
+
+
+        tempQandR = returnQuotientAndRemainderOfPolynomials(P, divisor);
+        Q = tempQandR.first;
+        R = tempQandR.second;
+
+        //if the remainder is zero, then we have found a factoring root
+        if (isZeroPolynomial(R))
+        {
+            P = Q;
+            result.push_back(possibleRoots[i]);
+        }
+        else {
+            //If we have met a rational root we dont increase i, since it could be 2-fold root or 2+ - fold root
+            i++;
+        }
+
+        //we remove the last element from the divisor
+        divisor.pop_back();
+    }
+
+   return result;
+}
+
+void printFactoring(vector<RationalNumber> roots)
+{
+    int size = roots.size();
+    RationalNumber currentNum;
+    int numerator, denominator;
+    int timesMetRoot;
+
+    for (int i = 0;i < size;)
+    {
+        currentNum = roots[i];
+        numerator = currentNum.first;
+        denominator = currentNum.second;
+
+        if (numerator == 0)
+        {
+            cout << "x";
+        }
+        else {
+            cout << "(x";
+            if (numerator < 0)
+            {
+                //here we flip the sign, since if p is rational root, then we print it as (x-p)
+                cout << "+";
+            }
+            printRational(ReturnMultiplicationRationalNums(currentNum,{-1,1}));
+            cout << ")";
+        }
+        
+        //we check if the root is more than 1-fold
+        timesMetRoot = 1;
+        for (int s = i + 1;s < size;s++)
+        {
+            if (areEqualRationalNums(roots[s], roots[i]))
+            {
+                timesMetRoot++;
+            }
+            else {
+                //we can do this, since the vector is sorted
+                break;
+            }
+        }
+
+        if (timesMetRoot > 1)
+        {
+            cout << "^" << timesMetRoot;
+        }
+        i += timesMetRoot;
+    }
+
+    cout << "=0";
+}
+void printRationalRoots(vector<RationalNumber> roots)
+{
+    int size = roots.size();
+    RationalNumber currentNum;
+    int numerator, denominator;
+    int timesMetRoot;
+
+    for (int i = 0;i < size;)
+    {
+        currentNum = roots[i];
+        numerator = currentNum.first;
+        denominator = currentNum.second;
+
+        cout << "x=";
+        printRational(currentNum);
+        //we check if the root is more than 1-fold
+        timesMetRoot = 1;
+        for (int s = i + 1;s < size;s++)
+        {
+            if (areEqualRationalNums(roots[s], roots[i]))
+            {
+                timesMetRoot++;
+            }
+            else {
+                //we can do this, since the vector is sorted
+                break;
+            }
+        }
+
+        cout << " -> " << timesMetRoot << "-fold root" << endl;
+         
+        i += timesMetRoot;
+    }
+
 }
 
 void addPolynomials() {
@@ -762,11 +1036,11 @@ void dividePolynomials() {
 
 
     //R will be the result of the division
-    vector<RationalNumber> Quotient = returnDivisionOfPolynomials(A, B);
+    pair<vector<RationalNumber>,vector<RationalNumber>> QuotientAndRemainder = returnQuotientAndRemainderOfPolynomials(A, B);
     cout << "Quotient Q(x)=";
-    printPolynomial(Quotient);
+    printPolynomial(QuotientAndRemainder.first);
     cout << "Remainder R(x)=";
-    printPolynomial(A);
+    printPolynomial(QuotientAndRemainder.second);
 }
 
 void multiplyPolynomialByScalar() {
@@ -830,6 +1104,16 @@ void representInPowers() {
 }
 
 void factorAndFindRoots() {
-    cout << "factorAndFindRoots() is not implemented yet.\n";
+    cout << "Enter polynomial P(x)" << endl;
+    vector<RationalNumber> P = readPolynomial();
+    cout << "P(X) = ";
+    printPolynomial(P);
+
+    vector<RationalNumber> R = returnRationalRoots(P);
+    printFactoring(R);
+    cout << endl;
+    cout << "RATIONAL ROOTS:" <<endl;
+    printRationalRoots(R);
+
 } 
 
