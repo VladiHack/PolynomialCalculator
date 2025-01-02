@@ -220,6 +220,17 @@ void printPolynomial(vector<RationalNumber> polynomial)
     cout << endl;
 }
 
+void swapPolynomials(vector<RationalNumber>& P, vector<RationalNumber>& Q)
+{
+    const int sizeP = P.size();
+    const int sizeQ = Q.size();
+    vector<RationalNumber> tempPolynomial;
+
+    tempPolynomial = P;
+    P = Q;
+    Q = tempPolynomial;
+}
+
 int minNumber(int a, int b)
 {
     if (a > b)
@@ -681,7 +692,7 @@ pair<vector<RationalNumber>,vector<RationalNumber>> returnQuotientAndRemainderOf
     // example : P(x) = 5x^5 - 4x^4 + 3x^3 + x^2 + x + 1
     // Q(x) = x^3 - 5
     //we need to find a coefficient, which will remove the element of highest degree in P(x). We do this until the highest degree in P(x) < highest degree in Q(x)
-    
+        
     pair<vector<RationalNumber>, vector<RationalNumber>> result;
 
     vector<RationalNumber> Quotient;
@@ -811,8 +822,15 @@ vector<RationalNumber> returnGcdOfPolynomials(vector<RationalNumber> P, vector<R
     //Step 3 : If the remainder is non-zero, replace P(x) with Q(x) and Q(x) with the remainder
     //Step 4 : Repeat until the remainder becomes zero
 
+    //If polynomial Q is of higher degree than B, we swap their places
+    if (Q.size() > P.size())
+    {
+        swapPolynomials(P, Q);
+    }
+
 
     vector<RationalNumber> remainderPolynomial;
+    
 
     while (true)
     {
@@ -825,8 +843,9 @@ vector<RationalNumber> returnGcdOfPolynomials(vector<RationalNumber> P, vector<R
 
         P = Q;
         Q = remainderPolynomial;
-
     }
+
+    
 
     return Q;
 }
@@ -1239,13 +1258,19 @@ void dividePolynomials() {
     cout << "B(X) = ";
     printPolynomial(B);
 
-
-    //R will be the result of the division
-    pair<vector<RationalNumber>,vector<RationalNumber>> QuotientAndRemainder = returnQuotientAndRemainderOfPolynomials(A, B);
-    cout << "Quotient Q(x)=";
-    printPolynomial(QuotientAndRemainder.first);
-    cout << "Remainder R(x)=";
-    printPolynomial(QuotientAndRemainder.second);
+    if (isZeroPolynomial(B))
+    {
+        cout << "Can't divide by zero polynomial!"<<endl;
+    }
+    else {
+        //R will be the result of the division
+        pair<vector<RationalNumber>, vector<RationalNumber>> QuotientAndRemainder = returnQuotientAndRemainderOfPolynomials(A, B);
+        cout << "Quotient Q(x)=";
+        printPolynomial(QuotientAndRemainder.first);
+        cout << "Remainder R(x)=";
+        printPolynomial(QuotientAndRemainder.second);
+    }
+  
 }
 
 void multiplyPolynomialByScalar() {
@@ -1320,7 +1345,7 @@ void representInPowers() {
 
 
     printRepresentationInPowers(P, num);
-
+    cout << endl;
 }
 
 void factorAndFindRoots() {
