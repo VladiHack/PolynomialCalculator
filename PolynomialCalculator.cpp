@@ -54,10 +54,11 @@ int main()
 {
     cout << "Welcome to Polynomial Calculator - a mini project intended to work with polynomials with rational coefficients \nChoose one of the following functionalities:\n";
     cout << "1) Add polynomials \n2) Subtract polynomials \n3) Multiply polynomials \n4) Divide polynomials \n5) Multiply polynomial by scalar) \n6) Find value of polynomial at a given number \n7) Find GCD of two polynomials \n8) Display Vieta's formulas for a given polynomial \n9) Represent a polynomial in powers of (x+a) \n10) Factor polynomial and find its rational roots \n11) Quit program \n";
-    cout << "Enter your option here>> ";
     int choice=0;
     while (choice != CHOICE_QUIT)
     {
+        cout << "Enter your option here>> ";
+
         cin >> choice;
         switch (choice)
         {
@@ -350,6 +351,61 @@ bool containsRationalNumber(vector<RationalNumber> vec, RationalNumber num)
         }
     }
     return false;
+}
+
+vector<vector<int>> returnAllVietaCombinations(int i, const int size, vector<vector<int>> keepCombinations)
+{
+
+    //i is equal to the combinations of x's. example i = 1 : x1 + x2 + .... + xn    i = 2 : x1x2 + x1x3 + .... 
+
+    vector<int> rootCombination;
+    vector<vector<int>> keepNewCombinations;
+
+    int sizeCombinations = 0;
+    int biggestElement; 
+    int sizeCurrentCombination = 0;
+
+
+    if (i == 1)
+    {
+        for (int j = 1;j < size;j++)
+        {
+            rootCombination.push_back(j);
+            keepCombinations.push_back(rootCombination);
+            rootCombination.pop_back();
+        }
+    }
+    else
+    {
+        sizeCombinations = keepCombinations.size();
+
+        for (int j = 0;j < sizeCombinations;j++)
+        {
+            rootCombination = keepCombinations[j];
+            sizeCurrentCombination = rootCombination.size();
+
+            //we find the last element in the current combination and we add all all the elements which are bigger than the last one
+            biggestElement = rootCombination[sizeCurrentCombination - 1];
+
+            //we add each possible element
+            for (int s = biggestElement + 1;s < size;s++)
+            {
+                rootCombination.push_back(s);
+                keepNewCombinations.push_back(rootCombination);
+                rootCombination.pop_back();
+            }
+        }
+        keepCombinations = keepNewCombinations;
+        keepNewCombinations.clear();
+    }
+
+
+
+
+
+
+
+    return keepCombinations;
 }
 
 vector<RationalNumber> addDegree(vector<RationalNumber> P, int degree)
@@ -1121,57 +1177,18 @@ void printVietaForPolynomial(vector<RationalNumber> P)
 {
      int size = P.size();
 
-     //we keep all the combinations
-     vector<int> rootCombination;
-     vector<vector<int>> keepPrevCombinations;
-     vector<vector<int>> keepNewCombinations;
+     vector<vector<int>> keepCombinations;
 
      RationalNumber numerator;
      RationalNumber denominator = P[0];
      RationalNumber result;
 
-     int sizeCombinations = 0;int biggestElement; int sizeCurrentCombination = 0;
 
     for (int i = 1;i < size;i++)
     {
-        //i is equal to the combinations of x's. example i = 1 : x1 + x2 + .... + xn    i = 2 : x1x2 + x1x3 + .... 
-
-        if (i == 1)
-        {
-            for (int j = 1;j < size;j++)
-            {
-                rootCombination.push_back(j);
-                keepPrevCombinations.push_back(rootCombination);
-                sizeCombinations++;
-                rootCombination.pop_back();
-            }
-        }
-        else 
-        {
-            sizeCombinations = keepPrevCombinations.size();
-
-            for (int j = 0;j < sizeCombinations;j++)
-            {
-                rootCombination = keepPrevCombinations[j];
-                sizeCurrentCombination = rootCombination.size();
-
-                    //we find the last element in the current combination and we add all all the elements which are bigger than the last one
-                    biggestElement = rootCombination[sizeCurrentCombination - 1];
-
-                    //we add each possible element
-                    for (int s = biggestElement + 1;s < size;s++)
-                    {
-                        rootCombination.push_back(s);
-                        keepNewCombinations.push_back(rootCombination);
-                        rootCombination.pop_back();
-                    }
-            }
-            keepPrevCombinations = keepNewCombinations;
-            keepNewCombinations.clear();
-        }
-
         
-        printCombination(keepPrevCombinations);
+        keepCombinations = returnAllVietaCombinations(i, size,keepCombinations);
+        printCombination(keepCombinations);
         
         // in the formula we have (-1)^n a0 / an
         numerator = P[i];
