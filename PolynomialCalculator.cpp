@@ -21,39 +21,58 @@ void findGCDOfTwoPolynomials();
 void displayVieta();
 void representInPowers();
 void factorAndFindRoots();
-vector<RationalNumber> readPolynomial();
 void printPolynomial(vector<RationalNumber> polynomial);
-RationalNumber readRationalNumber();
+void swapPolynomials(vector<RationalNumber>& P, vector<RationalNumber>& Q);
+void printRational(RationalNumber num);
+void printRational(int numerator, int denominator);
+void printRepresentationInPowers(vector<RationalNumber> P, RationalNumber num);
+void printFactoring(vector<RationalNumber> roots);
+void printRationalRoots(vector<RationalNumber> roots);
+void printCombination(vector<vector<int>> combinations);
+void printVietaForPolynomial(vector<RationalNumber> P);
+void printWelcomeMessage();
+
 int gcdNums(int a, int b);
 int minNumber(int a, int b);
 int lcmNums(int a, int b);
+int abs(int a);
+
 bool  isZeroPolynomial(vector<RationalNumber> P);
+bool isConstantPolynomial(vector<RationalNumber> P);
+bool areEqualRationalNums(RationalNumber num1, RationalNumber num2);
+bool containsRationalNumber(vector<RationalNumber> vec, RationalNumber num);
+
+RationalNumber readRationalNumber();
+RationalNumber ReturnSumOfRationalNums(RationalNumber elP, RationalNumber elQ);
+RationalNumber ReturnMultiplicationRationalNums(RationalNumber elP, RationalNumber elQ);
+RationalNumber ReturnDivisionOfRationalNums(RationalNumber elP, RationalNumber elQ);
+RationalNumber returnValueAtNumber(vector<RationalNumber> P, RationalNumber num);
+
+vector<RationalNumber> readPolynomial();
 vector<RationalNumber> returnMultiplicationOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q);
-void printRational(RationalNumber num)
-
-
-{
-    int numerator = num.first;
-    int denominator = num.second;
-    if (numerator == 0)
-    {
-        cout << "0";
-        return;
-    }
-    if (denominator == 1)
-    {
-        cout << numerator;
-        return;
-    }
-
-    cout << numerator << "/" << denominator;
-}
 vector<RationalNumber> returnMultipliedPolynomialByScalar(vector<RationalNumber> P, RationalNumber scalar);
+vector<RationalNumber> addDegree(vector<RationalNumber> P, int degree);
+vector<RationalNumber> resizePolynomial(vector<RationalNumber> P);
+vector<RationalNumber> copyVector(vector<RationalNumber> P);
+vector<RationalNumber> returnPossibleRoots(vector<int> primeDivisorsA, vector<int> primeDivisorsN);
+vector<RationalNumber> returnValueAtPolynomial(vector<RationalNumber> P, vector<RationalNumber> Q);
+vector<RationalNumber> returnSumOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q);
+vector<RationalNumber> returnSubtractionOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q);
+vector<RationalNumber> returnRemainderOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q);
+vector<RationalNumber> returnGcdOfPolynomials(vector<RationalNumber> P, vector<RationalNumber> Q);
+vector<RationalNumber> returnRationalRoots(vector<RationalNumber> P);
+
+
+pair<vector<RationalNumber>, vector<RationalNumber>> returnQuotientAndRemainderOfPolynomials(vector<RationalNumber>  P, vector<RationalNumber> Q);
+
+
+vector<vector<int>> returnAllVietaCombinations(int i, const int size, vector<vector<int>> keepCombinations);
+
+
 
 int main()
 {
-    cout << "Welcome to Polynomial Calculator - a mini project intended to work with polynomials with rational coefficients \nChoose one of the following functionalities:\n";
-    cout << "1) Add polynomials \n2) Subtract polynomials \n3) Multiply polynomials \n4) Divide polynomials \n5) Multiply polynomial by scalar) \n6) Find value of polynomial at a given number \n7) Find GCD of two polynomials \n8) Display Vieta's formulas for a given polynomial \n9) Represent a polynomial in powers of (x+a) \n10) Factor polynomial and find its rational roots \n11) Quit program \n";
+    printWelcomeMessage();
     int choice=0;
     while (choice != CHOICE_QUIT)
     {
@@ -115,6 +134,32 @@ vector<RationalNumber> readPolynomial()
 
   
     return polynomial;
+}
+
+void printWelcomeMessage()
+{
+    cout << "Welcome to Polynomial Calculator - a mini project intended to work with polynomials with rational coefficients \nChoose one of the following functionalities:\n";
+    cout << "1) Add polynomials \n2) Subtract polynomials \n3) Multiply polynomials \n4) Divide polynomials \n5) Multiply polynomial by scalar) \n6) Find value of polynomial at a given number \n7) Find GCD of two polynomials \n8) Display Vieta's formulas for a given polynomial \n9) Represent a polynomial in powers of (x+a) \n10) Factor polynomial and find its rational roots \n11) Quit program \n";
+}
+
+void printRational(RationalNumber num)
+
+
+{
+    int numerator = num.first;
+    int denominator = num.second;
+    if (numerator == 0)
+    {
+        cout << "0";
+        return;
+    }
+    if (denominator == 1)
+    {
+        cout << numerator;
+        return;
+    }
+
+    cout << numerator << "/" << denominator;
 }
 
 void printPolynomial(vector<RationalNumber> polynomial)
@@ -316,23 +361,7 @@ bool isConstantPolynomial(vector<RationalNumber> P)
     
     return true;
 }
-bool isPrime(int number)
-{
-    int sq = sqrt(number);
 
-    bool isPrime = true;
-
-    for (int i = 2;i <= sq;i++)
-    {
-        if (number % i == 0)
-        {
-            isPrime = false;
-            break;
-        }
-    }
-
-    return isPrime;
-}
 
 bool areEqualRationalNums(RationalNumber num1, RationalNumber num2)
 {
@@ -506,27 +535,23 @@ vector<RationalNumber> returnPossibleRoots(vector<int> primeDivisorsA, vector<in
     return possibleRoots;
 }
 
-vector<int> returnPrimeDivisors(int number)
+vector<int> returnDivisors(int number)
 {
     vector<int> divisors;
-    
+
     number = abs(number);
 
-    if (isPrime(number))
-    {
-        divisors.push_back(number);
-    }
-    else {
+  
         int endIndex = number / 2;
 
         for (int i = 2;i <= endIndex; i++)
         {
-            if ( (number % i == 0) && isPrime(i))
+            if (number % i == 0)
             {
                 divisors.push_back(i);
             }
         }
-    }
+    
     return divisors;
 }
 
@@ -927,9 +952,9 @@ vector<RationalNumber> returnRationalRoots(vector<RationalNumber> P)
     P = returnMultipliedPolynomialByScalar(P, coefficient);
     
     //we find all the prime divisors of the first element
-    vector<int> primeDivisorsA = returnPrimeDivisors(P[indexA].first);
+    vector<int> primeDivisorsA = returnDivisors(P[indexA].first);
     //we find all the prime divisors of the last element
-    vector<int> primeDivisorsN = returnPrimeDivisors(P[indexN].first);
+    vector<int> primeDivisorsN = returnDivisors(P[indexN].first);
 
     //since 1 isn't prime, we add it to both vectors, as it can be a root
     //by adding 1 as first element, the resulting vectors will be sorted
@@ -939,6 +964,7 @@ vector<RationalNumber> returnRationalRoots(vector<RationalNumber> P)
     
 
     vector<RationalNumber> possibleRoots = returnPossibleRoots(primeDivisorsA, primeDivisorsN);
+
 
     //now we test each possible root using the division of two polynomials. If the remainder is 0, then the root is a factoring root
     int maxSize = possibleRoots.size();
@@ -981,20 +1007,16 @@ vector<RationalNumber> returnRationalRoots(vector<RationalNumber> P)
 
 void printRational(int numerator, int denominator)
 {
-    if (numerator != 1 || denominator != 1)
-    {
         if (numerator > 0)
         {
             cout << "+";
         }
-
         cout << numerator;
         if (denominator != 1)
         {
             cout << "/" << denominator;
         }
 
-    }
 }
 
 void printRepresentationInPowers(vector<RationalNumber> P, RationalNumber num) 
@@ -1037,7 +1059,6 @@ void printRepresentationInPowers(vector<RationalNumber> P, RationalNumber num)
             //no + before the first element
             if (numerator != 1 || denominator != 1)
             {
-                cout << numerator;
                 if (denominator != 1)
                 {
                     cout << "/" << denominator;
