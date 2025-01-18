@@ -1,4 +1,18 @@
 
+/*
+Solution to course project # 4
+Introduction to programming course
+Faculty of Mathematics and Informatics of Sofia
+University
+Winter semester 2024/2025
+
+@author Vladimir Boychev
+@idnumber 5MI0600447 @compiler VC
+
+github - VladiHack
+https://github.com/VladiHack?tab=repositories
+*/
+
 
 #include <iostream>
 #include <vector>
@@ -6,11 +20,14 @@
 using namespace std;
 
 constexpr int CHOICE_QUIT = 11;
+constexpr int CHOICE_DEFAULT = 12;
 constexpr int MAX_DEGREE = 1000;
+
+
 
 using RationalNumber = pair<int,int>;
 
-
+void run();
 void addPolynomials();
 void subtractPolynomials();
 void multiplyPolynomials();
@@ -70,10 +87,33 @@ vector<vector<int>> returnAllVietaCombinations(int i, const int size, vector<vec
 
 
 
+
 int main()
 {
+    run();
+}
+
+RationalNumber readRationalNumber() {
+    int numerator, denominator = 1; // Default denominator is 1
+    char slash; // To check for the '/' character
+
+    cin >> numerator; // First, read the numerator or plain integer
+
+    if (cin.peek() == '/') { // Check the next character in the input stream
+        cin >> slash >> denominator; // If '/' is found, read the denominator
+        if (denominator == 0) {
+            cout << "Error: Division by zero is not allowed!" << endl;
+            denominator = 1; // Default safe value
+        }
+    }
+
+    return { numerator, denominator };
+}
+
+void run()
+{
     printWelcomeMessage();
-    int choice=0;
+    int choice = 0;
     while (choice != CHOICE_QUIT)
     {
         cout << "Enter your option here>> ";
@@ -92,28 +132,11 @@ int main()
         case 9: representInPowers();break;
         case 10: factorAndFindRoots();break;
         case CHOICE_QUIT: break;
-        default: cout << "The number you need to choose is between 1 and 11!" << endl;
+        default: cout << "The number you need to choose is between 1 and 11!" << endl; 
+            choice = CHOICE_DEFAULT;
             break;
         }
     }
-   
-}
-
-RationalNumber readRationalNumber() {
-    int numerator, denominator = 1; // Default denominator is 1
-    char slash; // To check for the '/' character
-
-    cin >> numerator; // First, read the numerator or plain integer
-
-    if (cin.peek() == '/') { // Check the next character in the input stream
-        cin >> slash >> denominator; // If '/' is found, read the denominator
-        if (denominator == 0) {
-            cout << "Error: Division by zero is not allowed!" << endl;
-            denominator = 1; // Default safe value
-        }
-    }
-
-    return { numerator, denominator };
 }
 
 vector<RationalNumber> readPolynomial()
@@ -552,6 +575,8 @@ vector<int> returnDivisors(int number)
             }
         }
     
+     divisors.push_back(number);
+
     return divisors;
 }
 
